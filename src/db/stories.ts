@@ -1,5 +1,4 @@
 import { Low } from 'lowdb';
-import { LocalStorage } from 'lowdb/browser';
 
 export interface Story {
   id: string;
@@ -15,7 +14,35 @@ interface Database {
   stories: Story[];
 }
 
-const adapter = new LocalStorage<Database>('ai-narrative-stories');
+// 使用内存存储作为适配器
+class MemoryAdapter {
+  private data: Database | null = null;
+  private key: string;
+
+  constructor(key: string) {
+    this.key = key;
+    // 从本地存储读取数据
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        this.data = JSON.parse(stored);
+      } catch (e) {
+        this.data = null;
+      }
+    }
+  }
+
+  async read(): Promise<Database | null> {
+    return this.data;
+  }
+
+  async write(data: Database): Promise<void> {
+    this.data = data;
+    localStorage.setItem(this.key, JSON.stringify(data));
+  }
+}
+
+const adapter = new MemoryAdapter('ai-narrative-stories');
 const defaultData: Database = { stories: [] };
 export const db = new Low(adapter, defaultData);
 
