@@ -103,92 +103,97 @@ const Memory: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">记忆管理</h1>
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-3xl font-bold text-stone-900 mb-4">记忆库管理</h1>
+        <p className="text-stone-600">
+          管理故事中的角色、事件和设定，构建完整的故事世界。
+        </p>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold mb-3 text-purple-600 dark:text-purple-400">角色记忆</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="bg-white border border-stone-200 rounded-lg p-8 shadow-sm">
+          <h3 className="text-xl font-semibold text-stone-900 mb-4">角色记忆</h3>
+          <p className="text-stone-600 mb-6">
             管理角色的设定、关系和情感状态
           </p>
           <button 
             onClick={() => setShowAddCharacterModal(true)}
-            className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 rounded-md transition-colors"
+            className="w-full px-6 py-4 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
           >
             添加角色
           </button>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold mb-3 text-blue-600 dark:text-blue-400">情节记忆</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+        <div className="bg-white border border-stone-200 rounded-lg p-8 shadow-sm">
+          <h3 className="text-xl font-semibold text-stone-900 mb-4">情节记忆</h3>
+          <p className="text-stone-600 mb-6">
             记录关键事件、伏笔和世界观设定
           </p>
           <button 
             onClick={() => setShowAddEventModal(true)}
-            className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 rounded-md transition-colors"
+            className="w-full px-6 py-4 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
           >
             添加事件
           </button>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold mb-3 text-green-600 dark:text-green-400">检索工具</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            搜索相关记忆，检测逻辑冲突
+        <div className="bg-white border border-stone-200 rounded-lg p-8 shadow-sm">
+          <h3 className="text-xl font-semibold text-stone-900 mb-4">设定记忆</h3>
+          <p className="text-stone-600 mb-6">
+            管理世界观设定、规则和物品
           </p>
           <button 
             onClick={() => setShowAddSettingModal(true)}
-            className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 rounded-md transition-colors"
+            className="w-full px-6 py-4 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
           >
             添加设定
           </button>
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">记忆库</h2>
-        <div className="space-y-4">
+      <div className="bg-white border border-stone-200 rounded-lg p-8 shadow-sm">
+        <h2 className="text-xl font-semibold text-stone-900 mb-6">记忆库</h2>
+        <div className="space-y-6">
           {/* 角色记忆 */}
           {characters.map((character) => (
-            <div key={character.id} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold">{character.name}</h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+            <div key={character.id} className="border-b border-stone-200 pb-6">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-stone-900">{character.name}</h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-stone-100 text-stone-800">
                   角色
                 </span>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-2">{character.description}</p>
-              <p className="text-xs text-gray-400">创建于: {new Date(character.createdAt).toLocaleString()}</p>
+              <p className="text-stone-700 mb-3">{character.description}</p>
+              <p className="text-xs text-stone-500">创建于: {new Date(character.createdAt).toLocaleString()}</p>
             </div>
           ))}
           
           {/* 事件记忆 */}
           {events.map((event) => (
-            <div key={event.id} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold">{event.title}</h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <div key={event.id} className="border-b border-stone-200 pb-6">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-stone-900">{event.title}</h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-stone-100 text-stone-800">
                   事件
                 </span>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-2">{event.description}</p>
-              <p className="text-xs text-gray-400">时间: {event.timestamp}</p>
+              <p className="text-stone-700 mb-3">{event.description}</p>
+              <p className="text-xs text-stone-500">时间: {event.timestamp}</p>
             </div>
           ))}
           
           {/* 设定记忆 */}
           {settings.map((setting) => (
-            <div key={setting.id} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold">{setting.name}</h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+            <div key={setting.id} className="border-b border-stone-200 pb-6">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-stone-900">{setting.name}</h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-stone-100 text-stone-800">
                   设定
                 </span>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-2">{setting.description}</p>
-              <p className="text-xs text-gray-400">类型: {setting.type}</p>
+              <p className="text-stone-700 mb-3">{setting.description}</p>
+              <p className="text-xs text-stone-500">类型: {setting.type}</p>
             </div>
           ))}
         </div>
@@ -197,41 +202,41 @@ const Memory: React.FC = () => {
       {/* 添加角色模态框 */}
       {showAddCharacterModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">添加角色</h3>
+          <div className="bg-white p-8 rounded-lg w-full max-w-md border border-stone-200 shadow-lg">
+            <h3 className="text-xl font-semibold text-stone-900 mb-6">添加角色</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   角色名称
                 </label>
                 <input
                   type="text"
                   value={characterForm.name}
                   onChange={(e) => setCharacterForm({...characterForm, name: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   角色描述
                 </label>
                 <textarea
                   value={characterForm.description}
                   onChange={(e) => setCharacterForm({...characterForm, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                   rows={3}
                 />
               </div>
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowAddCharacterModal(false)}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors"
+                  className="px-6 py-3 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleAddCharacter}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                  className="px-6 py-3 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
                 >
                   保存
                 </button>
@@ -244,41 +249,41 @@ const Memory: React.FC = () => {
       {/* 添加事件模态框 */}
       {showAddEventModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">添加事件</h3>
+          <div className="bg-white p-8 rounded-lg w-full max-w-md border border-stone-200 shadow-lg">
+            <h3 className="text-xl font-semibold text-stone-900 mb-6">添加事件</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   事件标题
                 </label>
                 <input
                   type="text"
                   value={eventForm.title}
                   onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   事件描述
                 </label>
                 <textarea
                   value={eventForm.description}
                   onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                   rows={3}
                 />
               </div>
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowAddEventModal(false)}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors"
+                  className="px-6 py-3 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleAddEvent}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  className="px-6 py-3 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
                 >
                   保存
                 </button>
@@ -291,41 +296,41 @@ const Memory: React.FC = () => {
       {/* 添加设定模态框 */}
       {showAddSettingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">添加设定</h3>
+          <div className="bg-white p-8 rounded-lg w-full max-w-md border border-stone-200 shadow-lg">
+            <h3 className="text-xl font-semibold text-stone-900 mb-6">添加设定</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   设定名称
                 </label>
                 <input
                   type="text"
                   value={settingForm.name}
                   onChange={(e) => setSettingForm({...settingForm, name: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-stone-700 mb-3">
                   设定描述
                 </label>
                 <textarea
                   value={settingForm.description}
                   onChange={(e) => setSettingForm({...settingForm, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-6 py-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                   rows={3}
                 />
               </div>
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowAddSettingModal(false)}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors"
+                  className="px-6 py-3 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleAddSetting}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+                  className="px-6 py-3 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
                 >
                   保存
                 </button>

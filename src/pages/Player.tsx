@@ -1,391 +1,540 @@
 import React, { useState, useEffect } from 'react';
-import AIAPI from '../ai/narrative-engine/claude-api';
-import useStoryStore, { type Story, type StoryNode, type StoryOption } from '../stores/storyStore';
+import { useInteractionStore } from '../stores/interactionStore';
+import { claudeAPI } from '../ai/narrative-engine/claude-api';
+import { ChoicePanel } from '../components/ChoicePanel';
+import { SaveLoadManager } from '../components/SaveLoadManager';
+import type { StoryNode, Choice } from '../types/interaction';
+import { v4 as uuidv4 } from 'uuid';
 
-
+interface GameSettings {
+  genre: string;
+  customGenre: string;
+  background: string;
+  customBackground: string;
+  character: string;
+  customCharacter: string;
+  style: string;
+  customStyle: string;
+}
 
 const Player: React.FC = () => {
-  const [aiAPI, setAIAPI] = useState<AIAPI | null>(null);
-  const [storyBackground, setStoryBackground] = useState('');
+  const {
+    currentNodeId,
+    nodes,
+    error,
+    initStory,
+    makeChoice,
+    addPreloadedNode,
+    resetStory,
+    clearError,
+    loadStory
+  } = useInteractionStore();
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [currentNode, setCurrentNode] = useState<StoryNode | null>(null);
-  const [showBackgroundForm, setShowBackgroundForm] = useState(true);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [saveName, setSaveName] = useState('');
-  const [showLoadModal, setShowLoadModal] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  
+  const [saveLoadManager, setSaveLoadManager] = useState({
+    isOpen: false,
+    mode: 'save' as 'save' | 'load'
+  });
 
-  // 使用故事商店
-  const { 
-    createStory, 
-    getStories, 
-    getRootNode, 
-    getNodeById, 
-    addOptionToNode, 
-    createNewNodeFromOption 
-  } = useStoryStore();
+  const [gameSettings, setGameSettings] = useState<GameSettings>({
+    genre: 'adventure',
+    customGenre: '',
+    background: 'castle',
+    customBackground: '',
+    character: 'warrior',
+    customCharacter: '',
+    style: 'dark',
+    customStyle: ''
+  });
 
-  // 初始化智谱 AI 服务
+  // 从本地存储自动加载上次的设置
   useEffect(() => {
-    try {
-      const apiInstance = new AIAPI();
-      setAIAPI(apiInstance);
-    } catch (error) {
-      console.error('初始化 AI 服务失败:', error);
-      alert('初始化 AI 服务失败，请检查环境变量配置');
+    const savedSettings = localStorage.getItem('lastGameSettings');
+    if (savedSettings) {
+      try {
+        setGameSettings(JSON.parse(savedSettings));
+      } catch (e) {}
     }
   }, []);
 
-  const storyBackgrounds = [
-    '奇幻世界：一个充满魔法的王国，你是一名年轻的魔法师',
-    '科幻未来：2150年的太空殖民地，你是一名宇航员',
-    '历史冒险：18世纪的海盗时代，你是一名海盗船长',
-    '现代悬疑：现代都市，你是一名私家侦探',
-    '武侠江湖：古代中国，你是一名武林高手'
-  ];
+  const settingOptions = {
+    genres: [
+      { value: 'adventure', label: '奇幻冒险', desc: '探索未知，斩妖除魔' },
+      { value: 'romance', label: '恋爱日常', desc: '心跳加速，甜虐交织' },
+      { value: 'suspense', label: '悬疑推理', desc: '拨开迷雾，寻找真相' },
+      { value: 'scifi', label: '科幻星辰', desc: '未来科技，星际史诗' },
+      { value: 'wuxia', label: '武侠江湖', desc: '刀光剑影，快意恩仇' },
+      { value: 'workplace', label: '职场生存', desc: '步步为营，升职加薪' }
+    ],
+    backgrounds: [
+      { value: 'castle', label: '古老城堡', desc: '阴森的古堡，隐藏着秘密' },
+      { value: 'school', label: '青春校园', desc: '充满阳光与八卦的学园' },
+      { value: 'spaceship', label: '虚空飞船', desc: '航行于星际间的巨舰' },
+      { value: 'city', label: '赛博都市', desc: '霓虹闪烁的未来犯罪都市' },
+      { value: 'office', label: '高档写字楼', desc: '暗流涌动的商业中心' }
+    ],
+    characters: [
+      { value: 'warrior', label: '战斗专家', desc: '身手不凡，擅长物理说服' },
+      { value: 'detective', label: '敏锐侦探', desc: '观察力极强，善于推理' },
+      { value: 'student', label: '普通学生', desc: '看似平凡，实则暗藏玄机' },
+      { value: 'hacker', label: '极客黑客', desc: '精通技术，能入侵任何网络' },
+      { value: 'rookie', label: '职场新人', desc: '初出茅庐，渴望证明自己' }
+    ],
+    styles: [
+      { value: 'dark', label: '暗黑压抑', desc: '绝望、恐怖、充满未知' },
+      { value: 'epic', label: '热血高燃', desc: '宏大、刺激、充满激情' },
+      { value: 'sweet', label: '轻松高甜', desc: '幽默、治愈、疯狂撒糖' },
+      { value: 'comedy', label: '沙雕搞笑', desc: '无厘头、脑洞大开、反套路' }
+    ]
+  };
 
-  const handleBackgroundSelect = async (background: string) => {
-    if (!aiAPI) {
-      alert('AI 服务初始化中，请稍候');
-      return;
-    }
+  const getCurrentStyle = () => {
+    let genreDesc = settingOptions.genres.find(g => g.value === gameSettings.genre)?.label;
+    if (gameSettings.genre === 'custom') genreDesc = gameSettings.customGenre.trim() || '奇幻冒险';
 
+    let styleDesc = settingOptions.styles.find(s => s.value === gameSettings.style)?.label;
+    if (gameSettings.style === 'custom') styleDesc = gameSettings.customStyle.trim() || '跌宕起伏';
+
+    return `${genreDesc}题材（${styleDesc}的基调）`;
+  };
+
+  const generateStartPrompt = (settings: GameSettings): string => {
+    let bg = settingOptions.backgrounds.find(b => b.value === settings.background)?.label;
+    if (settings.background === 'custom') bg = settings.customBackground.trim() || '神秘的未知之地';
+
+    let char = settingOptions.characters.find(c => c.value === settings.character)?.label;
+    if (settings.character === 'custom') char = settings.customCharacter.trim() || '无名主角';
+
+    const openingHooks = [
+      "In Media Res (半路杀出)：故事开始时，你正处于一场极其激烈的冲突或尴尬的危机之中，必须立刻做出反应。",
+      "神秘物品：你正盯着手中一件极不寻常的物品，它刚刚触发了某种异象或引出了一个大麻烦。",
+      "致命谎言/秘密：你刚刚无意中发现了一个巨大的秘密（或骗局），而这个秘密正要改变你的命运。",
+      "反客为主：你原本在执行一项日常行动，但突然间局势反转，你陷入了完全被动的局面。",
+      "突如其来的访客：一个举止极其怪异（或带着满身麻烦）的人突然闯入你的视线，并强行把你卷入事件。",
+      "异象骤起：原本平静的环境中，突然发生了某种打破常识的变故，周围人都在恐慌或震惊，而你首当其冲。",
+      "黑色幽默：故事以一个极其荒诞、滑稽但又暗藏危机的误会作为开场。"
+    ];
+    
+    const randomHook = openingHooks[Math.floor(Math.random() * openingHooks.length)];
+
+    return `游戏设定：玩家扮演【${char}】，当前所处环境是【${bg}】。
+
+请你作为剧本杀导演，使用以下“切入手法”来开场：
+【${randomHook}】
+
+核心要求：
+1. 不要写任何多余的背景铺垫和自我介绍，直接把你抽到的“切入手法”砸向玩家。
+2. 营造出符合当前题材的强烈画面感（如恋爱的拉扯感、悬疑的紧张感等）。
+3. 把这个情境生动地描写出来，然后在这个关键的冲突点停下，交给玩家选择。`;
+  };
+
+  const handleStartGame = async () => {
     setIsGenerating(true);
+    setGameStarted(true);
+    localStorage.setItem('lastGameSettings', JSON.stringify(gameSettings));
+    
     try {
-      // 创建新故事
-      const story = createStory('互动故事', '匿名', background);
+      const prompt = generateStartPrompt(gameSettings);
+      const combinedStyleForAI = getCurrentStyle();
       
-      // 生成初始场景
-      const response = await aiAPI.generateStory({
-        prompt: background,
-        style: 'default',
-        maxLength: 500,
-        temperature: 0.7
+      const response = await claudeAPI.generateStory({
+        prompt: prompt,
+        style: combinedStyleForAI
       });
 
-      // 生成初始选项
-      const optionsResponse = await aiAPI.generateOptions({
-        story: response.story,
-        context: background
-      });
+      const choices: Choice[] = response.options ? response.options.map(opt => ({
+        id: uuidv4(),
+        text: opt.replace(/^\d+\.\s*/, '').trim(),
+        hint: ''
+      })) : [];
 
-      // 获取根节点
-      const rootNode = getRootNode(story.id);
-      if (!rootNode) throw new Error('根节点未找到');
-
-      // 更新根节点内容
-      useStoryStore.getState().updateNodeContent(rootNode.id, response.story, response.imagePrompt);
-
-      // 添加选项
-      optionsResponse.options.forEach(optionText => {
-        addOptionToNode(rootNode.id, {
-          text: optionText,
-          nextNodeId: null
-        });
-      });
-
-      // 更新当前节点
-      const updatedRootNode = getNodeById(rootNode.id);
-      if (updatedRootNode) {
-        setCurrentNode(updatedRootNode);
-      }
-
-      setShowBackgroundForm(false);
-    } catch (error) {
-      console.error('生成故事失败:', error);
-      alert('生成故事失败，请检查环境变量配置');
+      const initialNode: StoryNode = {
+        id: uuidv4(),
+        title: '序章：变局',
+        content: response.story,
+        choices: choices.length > 0 ? choices : [{ id: uuidv4(), text: '静观其变', hint: '' }],
+        parentId: null,
+        createdAt: Date.now()
+      };
+      initStory(initialNode);
+    } catch (err) {
+      console.error('开局生成失败:', err);
+      setGameStarted(false);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleOptionSelect = async (option: StoryOption) => {
-    if (!currentNode || !aiAPI) return;
+  const handleChoiceSelect = async (choiceId: string) => {
+    const currentNode = currentNodeId ? nodes[currentNodeId] : null;
+    if (!currentNode) return;
+    const selectedChoice = currentNode.choices.find(c => c.id === choiceId);
+    if (!selectedChoice) return;
 
     setIsGenerating(true);
     try {
-      // 构建新的上下文
-      const newContext = `${currentNode.content}\n\n选择：${option.text}`;
-
-      // 生成后续故事
-      const response = await aiAPI.generateStory({
-        prompt: newContext,
-        style: 'default',
-        maxLength: 500,
-        temperature: 0.7
+      const prompt = `目前的剧情是：\n${currentNode.content}\n\n玩家做出了选择：【${selectedChoice.text}】\n\n请顺着这个选择，继续发展剧情，并给出接下来的危机、转折或新的情境。`;
+      const response = await claudeAPI.generateStory({
+        prompt: prompt,
+        style: getCurrentStyle()
       });
 
-      // 生成新的选项
-      const optionsResponse = await aiAPI.generateOptions({
-        story: response.story,
-        context: newContext
-      });
+      const optionList = response.options || [];
+      const newChoices: Choice[] = optionList.map(optText => ({
+        id: uuidv4(),
+        text: optText.replace(/^\d+\.\s*/, '').trim(),
+        hint: 'AI 动态推演的选项'
+      }));
 
-      // 创建新节点
-      const newNode = createNewNodeFromOption(currentNode.storyId, option.id, {
-        title: `章节 ${Date.now()}`,
-        content: response.story,
-        imagePrompt: response.imagePrompt
-      });
-
-      // 添加新选项到新节点
-      optionsResponse.options.forEach(optionText => {
-        addOptionToNode(newNode.id, {
-          text: optionText,
-          nextNodeId: null
-        });
-      });
-
-      // 更新当前节点
-      const updatedNode = getNodeById(newNode.id);
-      if (updatedNode) {
-        setCurrentNode(updatedNode);
-      }
-    } catch (error) {
-      console.error('生成后续故事失败:', error);
-      alert('生成后续故事失败，请检查环境变量配置');
+      const newNode: StoryNode = {
+        id: uuidv4(),
+        title: `第 ${Object.keys(nodes).length + 1} 章`,
+        content: response.story || '剧情正在生成中...',
+        choices: newChoices.length > 0 ? newChoices : [{ id: uuidv4(), text: '继续', hint: '' }],
+        parentId: currentNode.id,
+        createdAt: Date.now()
+      };
+      addPreloadedNode(choiceId, newNode);
+      makeChoice(choiceId);
+    } catch (err) {
+      console.error('剧情生成失败:', err);
     } finally {
       setIsGenerating(false);
     }
   };
 
-
-
-  const handleCustomBackground = async () => {
-    if (!storyBackground.trim()) return;
-    await handleBackgroundSelect(storyBackground);
-  };
-
-  const handleBack = () => {
-    // 这里可以实现回退功能，通过查找当前节点的父节点
-    // 暂时留空
+  const handleRestart = () => {
+    resetStory();
+    setGameStarted(false);
+    setIsGenerating(false);
   };
 
   const handleSave = () => {
-    if (!currentNode) return;
-    setShowSaveModal(true);
-  };
-
-  const confirmSave = () => {
-    if (!currentNode || !saveName.trim()) return;
-    // 这里可以实现保存功能，通过更新故事信息
-    useStoryStore.getState().updateStory(currentNode.storyId, {
-      title: saveName.trim()
-    });
-    setShowSaveModal(false);
-    setSaveName('');
+    if (!currentNodeId) {
+      alert('当前没有可保存的游戏进度。');
+      return;
+    }
+    setSaveLoadManager({ isOpen: true, mode: 'save' });
   };
 
   const handleLoad = () => {
-    setShowLoadModal(true);
+    setSaveLoadManager({ isOpen: true, mode: 'load' });
   };
 
-  const confirmLoad = (story: Story) => {
-    const rootNode = getRootNode(story.id);
-    if (rootNode) {
-      setCurrentNode(rootNode);
-      setShowBackgroundForm(false);
+  // ✅ 修复：读档函数完整修复
+  const handleSaveGame = (slotId: string, name: string, data: { currentNodeId: string; nodes: Record<string, StoryNode> }) => {
+    const saveData = {
+      ...data,
+      gameSettings,
+      saveName: name,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(`storySave_${slotId}`, JSON.stringify(saveData));
+    setSaveLoadManager(prev => ({ ...prev, isOpen: false }));
+  };
+
+  // ✅ 修复：读档成功后自动进入游戏
+  const handleLoadGame = (slotId: string) => {
+    const saveDataString = localStorage.getItem(`storySave_${slotId}`);
+    if (!saveDataString) {
+      alert('存档不存在或已损坏');
+      return;
     }
-    setShowLoadModal(false);
+
+    try {
+      const parsed = JSON.parse(saveDataString);
+      const { currentNodeId: savedNodeId, nodes: savedNodes, gameSettings: savedSettings } = parsed;
+
+      if (savedNodeId && savedNodes) {
+        loadStory(savedNodeId, savedNodes);
+        if (savedSettings) setGameSettings(savedSettings);
+        setGameStarted(true);
+        setSaveLoadManager(prev => ({ ...prev, isOpen: false }));
+      } else {
+        alert('存档数据不完整');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('读取失败：数据格式错误');
+    }
   };
 
-  const deleteSave = (storyId: string) => {
-    useStoryStore.getState().deleteStory(storyId);
+  const currentNode = currentNodeId ? nodes[currentNodeId] : null;
+
+  // ✅ 新增：选中选项高亮特效
+  const renderOptionButton = (
+    type: keyof GameSettings,
+    value: string,
+    label: string,
+    desc: string
+  ) => {
+    const isSelected = gameSettings[type] === value;
+    return (
+      <button
+        key={value}
+        type="button"
+        onClick={() => setGameSettings(prev => ({ ...prev, [type]: value }))}
+        className={`p-5 rounded-xl border text-left transition-all duration-300 hover:scale-[1.02] ${
+          isSelected 
+            ? 'border-black bg-black text-white shadow-lg scale-[1.02]' 
+            : 'border-gray-200 bg-white hover:bg-gray-100'
+        }`}
+      >
+        <div className={`font-bold text-lg mb-1 ${isSelected ? 'text-white' : 'text-black'}`}>
+          {label}
+        </div>
+        {desc && (
+          <div className={`text-sm ${isSelected ? 'text-gray-200' : 'text-gray-600'}`}>
+            {desc}
+          </div>
+        )}
+      </button>
+    );
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">互动阅读</h1>
-
-      {showBackgroundForm ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">选择故事背景</h2>
-          
-          <div className="space-y-3 mb-6">
-            {storyBackgrounds.map((background, index) => (
-              <button
-                key={index}
-                onClick={() => handleBackgroundSelect(background)}
-                className="w-full text-left px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
-              >
-                {background}
-              </button>
-            ))}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              或输入自定义背景
-            </label>
-            <textarea
-              value={storyBackground}
-              onChange={(e) => setStoryBackground(e.target.value)}
-              placeholder="输入你想要的故事背景..."
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex space-x-3 mb-4">
-            <button
-              onClick={handleLoad}
-              className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
-            >
-              加载存档
-            </button>
-          </div>
-
-          <button
-            onClick={handleCustomBackground}
-            disabled={isGenerating || !storyBackground.trim()}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isGenerating ? '生成中...' : '开始故事'}
-          </button>
-        </div>
-      ) : currentNode ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {currentNode.title}
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleSave}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm transition-colors"
-              >
-                存档
-              </button>
-              <button
-                onClick={handleBack}
-                className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm transition-colors"
-              >
-                回退
-              </button>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-lg text-gray-800 dark:text-gray-200 leading-relaxed">
-              {currentNode.content}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {currentNode.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option)}
-                disabled={isGenerating}
-                className="w-full text-left px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-
-          {isGenerating && (
-            <div className="mt-4 text-center text-gray-600 dark:text-gray-400">
-              生成中，请稍候...
-            </div>
-          )}
-
-          <div className="flex space-x-3 mt-6">
-            <button
-              onClick={handleLoad}
-              className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
-            >
-              加载存档
-            </button>
-            <button
-              onClick={() => setShowBackgroundForm(true)}
-              className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
-            >
-              重新开始
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* 存档模态框 */}
-      {showSaveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">保存游戏</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                存档名称
-              </label>
-              <input
-                type="text"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                placeholder="输入存档名称..."
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-              />
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowSaveModal(false)}
-                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={confirmSave}
-                disabled={!saveName.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                保存
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 读档模态框 */}
-      {showLoadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold mb-4">加载存档</h3>
-            {getStories().length === 0 ? (
-              <p className="text-gray-600 dark:text-gray-400 mb-4">暂无存档</p>
-            ) : (
-              <div className="space-y-3">
-                {getStories().map((story) => (
-                  <div key={story.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700 rounded-md">
-                    <div>
-                      <div className="font-medium text-gray-800 dark:text-gray-200">{story.title}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(story.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => confirmLoad(story)}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-colors"
-                      >
-                        加载
-                      </button>
-                      <button
-                        onClick={() => deleteSave(story.id)}
-                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors"
-                      >
-                        删除
-                      </button>
-                    </div>
-                  </div>
-                ))}
+    <div className="min-h-screen bg-white text-black overflow-x-hidden relative">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {error && (
+          <div className="fixed top-6 right-6 z-50">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-red-600 font-bold text-lg mb-1">出错了</h3>
+                  <p className="text-red-700 mb-4">{error}</p>
+                  <button 
+                    onClick={clearError}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-xl border border-red-200"
+                  >
+                    关闭
+                  </button>
+                </div>
               </div>
-            )}
-            <button
-              onClick={() => setShowLoadModal(false)}
-              className="mt-4 w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
-            >
-              关闭
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {!gameStarted && !currentNodeId ? (
+          <div className="animate-fade-in-up">
+            <div className="text-center mb-16">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-black">
+                故事织梦者
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                选择题材与设定，AI 将为你编织独一无二的互动剧情
+              </p>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-md">
+              <div className="mb-12">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <span className="text-black font-bold">1</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-black">选择题材</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {settingOptions.genres.map(g => renderOptionButton('genre', g.value, g.label, g.desc))}
+                  {renderOptionButton('genre', 'custom', '自定义题材', '脑洞大开...')}
+                </div>
+                {gameSettings.genre === 'custom' && (
+                  <div className="mt-6">
+                    <input
+                      type="text"
+                      placeholder="请输入题材（例如：无限流、废土生存、宫斗权谋...）"
+                      value={gameSettings.customGenre}
+                      onChange={e => setGameSettings(prev => ({ ...prev, customGenre: e.target.value }))}
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-2xl text-black placeholder-gray-400"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-12">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <span className="text-black font-bold">2</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-black">故事背景</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {settingOptions.backgrounds.map(bg => renderOptionButton('background', bg.value, bg.label, bg.desc))}
+                  {renderOptionButton('background', 'custom', '自定义背景', '发挥想象...')}
+                </div>
+                {gameSettings.background === 'custom' && (
+                  <div className="mt-6">
+                    <input
+                      type="text"
+                      placeholder="请输入背景（例如：霍格沃茨魔法学校、19世纪伦敦...）"
+                      value={gameSettings.customBackground}
+                      onChange={e => setGameSettings(prev => ({ ...prev, customBackground: e.target.value }))}
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-2xl text-black placeholder-gray-400"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-12">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <span className="text-black font-bold">3</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-black">扮演身份</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {settingOptions.characters.map(char => renderOptionButton('character', char.value, char.label, char.desc))}
+                  {renderOptionButton('character', 'custom', '自定义身份', '专属人设...')}
+                </div>
+                {gameSettings.character === 'custom' && (
+                  <div className="mt-6">
+                    <input
+                      type="text"
+                      placeholder="请输入身份（例如：霸道总裁、隐世剑客、时间旅行者...）"
+                      value={gameSettings.customCharacter}
+                      onChange={e => setGameSettings(prev => ({ ...prev, customCharacter: e.target.value }))}
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-2xl text-black placeholder-gray-400"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-12">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <span className="text-black font-bold">4</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-black">叙事风格</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {settingOptions.styles.map(style => renderOptionButton('style', style.value, style.label, ''))}
+                  {renderOptionButton('style', 'custom', '自定义', '')}
+                </div>
+                 {gameSettings.style === 'custom' && (
+                  <div className="mt-6">
+                    <input
+                      type="text"
+                      placeholder="请输入叙事风格（例如：克苏鲁神话风、王道热血漫风...）"
+                      value={gameSettings.customStyle}
+                      onChange={e => setGameSettings(prev => ({ ...prev, customStyle: e.target.value }))}
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-2xl text-black placeholder-gray-400"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-8 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleStartGame}
+                  disabled={isGenerating}
+                  className="w-full py-6 bg-black text-white rounded-2xl font-bold text-xl hover:bg-gray-800 transition-all"
+                >
+                  {isGenerating ? 'AI 正在生成...' : '揭开帷幕'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={handleLoad}
+                  className="w-full mt-4 py-4 text-gray-600 hover:text-black hover:bg-gray-50 rounded-2xl font-medium"
+                >
+                  读取本地存档
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          currentNode && (
+            <div className="animate-fade-in-up">
+              <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-black mb-2">互动阅读</h1>
+                  <p className="text-gray-600">每一个选择都会引发不可预知的蝴蝶效应</p>
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleSave} 
+                    disabled={isGenerating} 
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                  >
+                    存档
+                  </button>
+                  <button 
+                    onClick={handleLoad} 
+                    disabled={isGenerating} 
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                  >
+                    读档
+                  </button>
+                  <button 
+                    onClick={handleRestart} 
+                    disabled={isGenerating} 
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                  >
+                    重置
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-md">
+                <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
+                  <span className="text-gray-500 font-mono text-sm tracking-wider uppercase">
+                    {currentNode.title}
+                  </span>
+                </div>
+
+                <div className="mb-12">
+                  <p className="text-black leading-relaxed text-xl md:text-2xl whitespace-pre-wrap">
+                    {currentNode.content}
+                  </p>
+                </div>
+
+                {isGenerating ? (
+                  <div className="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-2xl border border-gray-200">
+                    <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-black" />
+                    <span className="mt-6 text-gray-600 font-medium text-lg">AI 正在生成剧情...</span>
+                  </div>
+                ) : (
+                  <ChoicePanel choices={currentNode.choices} onSelect={handleChoiceSelect} />
+                )}
+              </div>
+            </div>
+          )
+        )}
+
+        {!currentNode && gameStarted && (
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="animate-spin rounded-full h-20 w-20 border-4 border-gray-200 border-t-black" />
+            <span className="mt-8 text-gray-600 font-medium text-xl">加载中...</span>
+          </div>
+        )}
+      </div>
+      
+      <SaveLoadManager
+        isOpen={saveLoadManager.isOpen}
+        onClose={() => setSaveLoadManager({ ...saveLoadManager, isOpen: false })}
+        mode={saveLoadManager.mode}
+        currentNodeId={currentNodeId}
+        nodes={nodes}
+        onSave={handleSaveGame}
+        onLoad={handleLoadGame}
+      />
+
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.6s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

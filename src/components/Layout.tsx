@@ -1,34 +1,126 @@
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 
 const Layout: React.FC = () => {
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // 纯文字导航项
+  const navItems = [
+    { path: '/', label: '首页' },
+    { path: '/editor', label: '编辑器' },
+    { path: '/player', label: '互动阅读' },
+    { path: '/memory', label: '回忆' }
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">AI 叙事创作平台</h1>
-          <nav className="flex space-x-4">
-            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-              首页
-            </Link>
-            <Link to="/editor" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-              创作工作台
-            </Link>
-            <Link to="/player" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-              互动播放器
-            </Link>
-            <Link to="/memory" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-              记忆管理
-            </Link>
-          </nav>
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] relative">
+      {/* 导航栏 - 纯文字浅色主题 */}
+      <nav className="relative z-50 sticky top-0 bg-white border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo - 纯文字 */}
+            <NavLink 
+              to="/" 
+              className="flex items-center"
+            >
+              <div>
+                <h1 className="text-xl font-bold text-[#0f172a]">
+                  StoryWeaver
+                </h1>
+                <p className="text-xs text-[#64748b] -mt-1">
+                  AI 互动故事平台
+                </p>
+              </div>
+            </NavLink>
+
+            {/* 桌面端导航 - 纯文字 */}
+            <div className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      isActive
+                        ? 'text-[#8b5cf6] bg-[#f1f5f9] font-semibold'
+                        : 'text-[#475569] hover:text-[#0f172a] hover:bg-[#f8fafc]'
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+
+            {/* 移动端菜单按钮 - 纯文字 */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden px-4 py-2 text-[#475569] hover:text-[#0f172a] font-medium"
+            >
+              {isMobileMenuOpen ? '关闭' : '菜单'}
+            </button>
+          </div>
         </div>
-      </header>
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <Outlet />
+
+        {/* 移动端导航菜单 - 纯文字 */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-[#e2e8f0] bg-white">
+            <div className="px-4 py-4 space-y-1">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'text-[#8b5cf6] bg-[#f1f5f9] font-semibold'
+                        : 'text-[#475569] hover:text-[#0f172a] hover:bg-[#f8fafc]'
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* 主内容区 */}
+      <main className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Outlet />
+        </div>
       </main>
-      <footer className="bg-white dark:bg-gray-800 shadow-sm mt-auto">
-        <div className="container mx-auto px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          AI 叙事创作平台 &copy; 2026
+
+      {/* 页脚 - 纯文字浅色主题 */}
+      <footer className="relative z-10 border-t border-[#e2e8f0] mt-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-[#64748b] text-sm">
+                © 2024 StoryWeaver. AI 互动故事平台
+              </p>
+            </div>
+            <div className="flex items-center gap-8">
+              <a href="#" className="text-[#64748b] hover:text-[#0f172a] text-sm transition-colors">
+                关于我们
+              </a>
+              <a href="#" className="text-[#64748b] hover:text-[#0f172a] text-sm transition-colors">
+                使用条款
+              </a>
+              <a href="#" className="text-[#64748b] hover:text-[#0f172a] text-sm transition-colors">
+                隐私政策
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
