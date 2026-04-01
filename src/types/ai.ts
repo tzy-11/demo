@@ -39,12 +39,3 @@ export interface StoryGenerationResponse {
   options: string[];
   imagePrompt?: string;
 }
-
-export interface OptionsGenerationRequest {
-  story: string;
-  context: string;
-}
-
-export interface OptionsGenerationResponse {
-  options: string[];
-}
