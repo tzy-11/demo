@@ -13,6 +13,7 @@ export interface StoryNode {
   storyId: string;
   title: string;
   content: string;
+  nodeSummary?: string; // 每个节点的简要大纲，可以根据这个字段生成后续内容
   chapterName?: string;
   imagePrompt?: string;
   imageUrl?: string;
