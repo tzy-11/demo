@@ -38,6 +38,7 @@ const Editor: React.FC = () => {
         imagePrompt: response.imagePrompt || '',
         style
       });
+    } catch (error) {
       console.error('Error generating story:', error);
       setStory('生成故事时出错，请重试。');
     } finally {
