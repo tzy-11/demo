@@ -1,21 +1,25 @@
 :root {
-  /* 全新浅色配色系统 */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
+  /* 图片风格配色系统 */
+  --bg-primary: #f8f4ff;
+  --bg-secondary: #f0e8ff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
-  --accent: #8b5cf6;
-  --accent-secondary: #ec4899;
-  --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #06b6d4 100%);
-  --accent-bg: rgba(139, 92, 246, 0.08);
-  --accent-border: rgba(139, 92, 246, 0.2);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border: #e2e8f0;
-  --shadow-soft: 0 2px 12px rgba(15, 23, 42, 0.08);
-  --shadow-medium: 0 4px 20px rgba(15, 23, 42, 0.12);
-  --shadow-strong: 0 8px 30px rgba(15, 23, 42, 0.15);
+  --bg-card-hover: #f8f4ff;
+  --accent: #6d28d9;
+  --accent-secondary: #9333ea;
+  --accent-gradient: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%);
+  --accent-bg: rgba(109, 40, 217, 0.08);
+  --accent-border: rgba(109, 40, 217, 0.2);
+  --text-primary: #1e1b4b;
+  --text-secondary: #4338ca;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow-soft: 0 2px 12px rgba(109, 40, 217, 0.1);
+  --shadow-medium: 0 4px 20px rgba(109, 40, 217, 0.15);
+  --shadow-strong: 0 8px 30px rgba(109, 40, 217, 0.2);
+  --button-bg: #1e1b4b;
+  --button-text: #ffffff;
+  --progress-bg: #e5e7eb;
+  --progress-fill: #6d28d9;
 }
 
 * {
@@ -25,13 +29,14 @@
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg-primary);
+  background: linear-gradient(135deg, #f8f4ff 0%, #f0e8ff 100%);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* 浅色背景装饰光晕 */
+/* 背景装饰光晕 */
 body::before {
   content: '';
   position: fixed;
@@ -40,9 +45,8 @@ body::before {
   width: 200%;
   height: 200%;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(109, 40, 217, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.1) 0%, transparent 50%);
   z-index: -1;
   animation: pulse-bg 15s ease-in-out infinite;
 }

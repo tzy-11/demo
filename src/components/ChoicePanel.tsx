@@ -13,9 +13,9 @@ export const ChoicePanel: React.FC<ChoicePanelProps> = ({ choices, onSelect }) =
         <button
           key={choice.id}
           onClick={() => onSelect(choice.id)}
-          className="w-full p-5 text-left bg-white border border-gray-200 rounded-xl text-black text-lg 
-                    hover:bg-gray-100 hover:border-black hover:scale-[1.01] 
-                    transition-all duration-200 shadow-sm"
+          className="w-full p-5 text-left bg-white border border-gray-200 rounded-xl text-[#1e1b4b] text-lg 
+                    hover:bg-gray-50 hover:border-[#6d28d9] hover:scale-[1.01] 
+                    transition-all duration-200 shadow-md hover:shadow-lg"
         >
           <span className="font-medium">{choice.text}</span>
           {choice.hint && (

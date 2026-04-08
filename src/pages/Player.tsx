@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useInteractionStore } from '../stores/interactionStore';
 import { claudeAPI } from '../ai/narrative-engine/claude-api';
+import { PromptBuilder } from '../ai/prompt-templates/prompt-builder';
 import { ChoicePanel } from '../components/ChoicePanel';
 import { SaveLoadManager } from '../components/SaveLoadManager';
 import type { StoryNode, Choice } from '../types/interaction';
@@ -175,7 +176,10 @@ const Player: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const prompt = `目前的剧情是：\n${currentNode.content}\n\n玩家做出了选择：【${selectedChoice.text}】\n\n请顺着这个选择，继续发展剧情，并给出接下来的危机、转折或新的情境。`;
+      const prompt = PromptBuilder.buildContinuationPrompt(
+        `${currentNode.content}\n\n玩家做出了选择：【${selectedChoice.text}】`,
+        getCurrentStyle()
+      );
       const response = await claudeAPI.generateStory({
         prompt: prompt,
         style: getCurrentStyle()
@@ -278,11 +282,11 @@ const Player: React.FC = () => {
         onClick={() => setGameSettings(prev => ({ ...prev, [type]: value }))}
         className={`p-5 rounded-xl border text-left transition-all duration-300 hover:scale-[1.02] ${
           isSelected 
-            ? 'border-black bg-black text-white shadow-lg scale-[1.02]' 
+            ? 'border-[#6d28d9] bg-gradient-to-r from-[#6d28d9] to-[#9333ea] text-white shadow-lg scale-[1.02]' 
             : 'border-gray-200 bg-white hover:bg-gray-100'
         }`}
       >
-        <div className={`font-bold text-lg mb-1 ${isSelected ? 'text-white' : 'text-black'}`}>
+        <div className={`font-bold text-lg mb-1 ${isSelected ? 'text-white' : 'text-[#1e1b4b]'}`}>
           {label}
         </div>
         {desc && (
@@ -295,8 +299,8 @@ const Player: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black overflow-x-hidden relative">
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-gradient-to-r from-[#f8f4ff] to-[#f0e8ff] text-[#1e1b4b] overflow-x-hidden relative">
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-8">
         {error && (
           <div className="fixed top-6 right-6 z-50">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
@@ -324,7 +328,7 @@ const Player: React.FC = () => {
         {!gameStarted && !currentNodeId ? (
           <div className="animate-fade-in-up">
             <div className="text-center mb-16">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-black">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-[#1e1b4b]">
                 故事织梦者
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -332,7 +336,7 @@ const Player: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-md">
+            <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
               <div className="mb-12">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center">
@@ -434,7 +438,7 @@ const Player: React.FC = () => {
                   type="button"
                   onClick={handleStartGame}
                   disabled={isGenerating}
-                  className="w-full py-6 bg-black text-white rounded-2xl font-bold text-xl hover:bg-gray-800 transition-all"
+                  className="w-full py-6 bg-gradient-to-r from-[#6d28d9] to-[#9333ea] text-white rounded-2xl font-bold text-xl hover:from-[#5b21b6] hover:to-[#7e22ce] transition-all shadow-lg hover:shadow-xl"
                 >
                   {isGenerating ? 'AI 正在生成...' : '揭开帷幕'}
                 </button>
@@ -442,7 +446,7 @@ const Player: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleLoad}
-                  className="w-full mt-4 py-4 text-gray-600 hover:text-black hover:bg-gray-50 rounded-2xl font-medium"
+                  className="w-full mt-4 py-4 text-gray-600 hover:text-[#6d28d9] hover:bg-gray-50 rounded-2xl font-medium"
                 >
                   读取本地存档
                 </button>
@@ -454,35 +458,35 @@ const Player: React.FC = () => {
             <div className="animate-fade-in-up">
               <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-black mb-2">互动阅读</h1>
+                  <h1 className="text-3xl font-bold text-[#1e1b4b] mb-2">互动阅读</h1>
                   <p className="text-gray-600">每一个选择都会引发不可预知的蝴蝶效应</p>
                 </div>
                 <div className="flex gap-3">
                   <button 
                     onClick={handleSave} 
                     disabled={isGenerating} 
-                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#1e1b4b] rounded-xl font-medium"
                   >
                     存档
                   </button>
                   <button 
                     onClick={handleLoad} 
                     disabled={isGenerating} 
-                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#1e1b4b] rounded-xl font-medium"
                   >
                     读档
                   </button>
                   <button 
                     onClick={handleRestart} 
                     disabled={isGenerating} 
-                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-black rounded-xl font-medium"
+                    className="px-5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#1e1b4b] rounded-xl font-medium"
                   >
                     重置
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-md">
+              <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
                 <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
                   <span className="text-gray-500 font-mono text-sm tracking-wider uppercase">
                     {currentNode.title}
@@ -490,14 +494,14 @@ const Player: React.FC = () => {
                 </div>
 
                 <div className="mb-12">
-                  <p className="text-black leading-relaxed text-xl md:text-2xl whitespace-pre-wrap">
+                  <p className="text-[#1e1b4b] leading-relaxed text-xl md:text-2xl whitespace-pre-wrap">
                     {currentNode.content}
                   </p>
                 </div>
 
                 {isGenerating ? (
                   <div className="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-2xl border border-gray-200">
-                    <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-black" />
+                    <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-[#6d28d9]" />
                     <span className="mt-6 text-gray-600 font-medium text-lg">AI 正在生成剧情...</span>
                   </div>
                 ) : (

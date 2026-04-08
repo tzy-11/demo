@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-// StoryWeaver 风格的 Home 页面
+// StoryWeaver 风格的 Home 页面（无图标版）
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -74,14 +74,9 @@ const Home: React.FC = () => {
           </div>
         )}
 
-        {/* 核心功能 */}
+        {/* 核心功能（已删除所有图标） */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           <div className="bg-white border border-stone-200 rounded-lg p-8 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-              </svg>
-            </div>
             <h3 className="text-xl font-semibold text-stone-900 mb-4">深度文学叙事</h3>
             <p className="text-stone-600 leading-relaxed">
               拒绝"AI味"内容，通过精心调校的 Prompt 引导 AI 生成具有文学质感的叙事段落。
@@ -89,11 +84,6 @@ const Home: React.FC = () => {
           </div>
 
           <div className="bg-white border border-stone-200 rounded-lg p-8 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            </div>
             <h3 className="text-xl font-semibold text-stone-900 mb-4">智能投机预加载</h3>
             <p className="text-stone-600 leading-relaxed">
               在用户阅读当前章节时，已在后台预先构思可能的后续分支，实现无缝衔接的阅读体验。
@@ -101,11 +91,6 @@ const Home: React.FC = () => {
           </div>
 
           <div className="bg-white border border-stone-200 rounded-lg p-8 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-            </div>
             <h3 className="text-xl font-semibold text-stone-900 mb-4">意境级插图</h3>
             <p className="text-stone-600 leading-relaxed">
               为每个章节自动生成符合语境的意境插图，增强故事的视觉表现力和沉浸感。
@@ -113,7 +98,7 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* 推荐故事 */}
+        {/* 推荐故事（已删除所有图标） */}
         <div className="mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-stone-900">精选故事</h2>
@@ -122,59 +107,7 @@ const Home: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* 推荐故事 1 */}
-            <Link to="/player" className="group">
-              <div className="aspect-[3/4] bg-stone-100 rounded-lg mb-4 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                  </svg>
-                </div>
-              </div>
-              <h3 className="text-stone-900 font-medium mb-1">霓虹余烬</h3>
-              <p className="text-sm text-stone-500">科幻 / 赛博</p>
-            </Link>
-
-            {/* 推荐故事 2 */}
-            <Link to="/player" className="group">
-              <div className="aspect-[3/4] bg-stone-100 rounded-lg mb-4 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                  </svg>
-                </div>
-              </div>
-              <h3 className="text-stone-900 font-medium mb-1">星渊异客</h3>
-              <p className="text-sm text-stone-500">奇幻 / 冒险</p>
-            </Link>
-
-            {/* 推荐故事 3 */}
-            <Link to="/player" className="group">
-              <div className="aspect-[3/4] bg-stone-100 rounded-lg mb-4 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                  </svg>
-                </div>
-              </div>
-              <h3 className="text-stone-900 font-medium mb-1">权利的游戏</h3>
-              <p className="text-sm text-stone-500">历史 / 权谋</p>
-            </Link>
-
-            {/* 推荐故事 4 */}
-            <Link to="/player" className="group">
-              <div className="aspect-[3/4] bg-stone-100 rounded-lg mb-4 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                  </svg>
-                </div>
-              </div>
-              <h3 className="text-stone-900 font-medium mb-1">暗影迷踪</h3>
-              <p className="text-sm text-stone-500">悬疑 / 推理</p>
-            </Link>
-          </div>
+          
         </div>
 
         {/* 行动号召 */}
