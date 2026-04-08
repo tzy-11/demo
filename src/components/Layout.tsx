@@ -11,6 +11,9 @@ const Layout: React.FC = () => {
             <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
               首页
             </Link>
+            <Link to="/stories" className="px-3 py-2 rounded-md text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300">
+              作品库
+            </Link>
             <Link to="/editor" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
               创作工作台
             </Link>
