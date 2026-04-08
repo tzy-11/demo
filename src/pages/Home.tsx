@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { useStoryStore } from '../stores/storyStore';
 
 const Home: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sampleStory, setSampleStory] = useState('');
+
+  // 引入 D 模块的核心操作方法和状态
+  const createStory = useStoryStore((state) => state.createStory);
+  const stories = useStoryStore((state) => state.stories);
 
   const generateSampleStory = async () => {
     setIsGenerating(true);
