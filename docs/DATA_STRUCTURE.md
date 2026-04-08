@@ -32,6 +32,7 @@ export interface StoryNode {
   title: string;       // 章节/节点标题 (如：第一章-初始森林)
   content: string;     // AI 生成的故事正文（A模块 Editor 核心操作字段）
   chapterName?: string;// 章节卷管理,用于在后台将节点逻辑分组 (如 "序章", "第一卷")
+  nodeSummary?: string; // 每个节点的简要大纲，可以根据这个字段生成后续内容
   
   // --- 视觉扩展字段 (留给 E模块 对接AI画图) ---
   imagePrompt?: string;// 画图提示词
