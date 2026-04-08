@@ -42,7 +42,7 @@ const Stories: React.FC = () => {
   };
 
   // 触发下载的通用函数
-  const downloadJson = (data: any, filename: string) => {
+  const downloadJson = (data: Record<string, unknown>, filename: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -91,7 +91,7 @@ const Stories: React.FC = () => {
         } else {
           alert('导入的文件格式不符合规范！');
         }
-      } catch (error) {
+      } catch {
         alert('解析 JSON 失败，文件可能已损坏。');
       }
       // 重置 input 以便能反复导入同名文件

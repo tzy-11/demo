@@ -1,4 +1,4 @@
-import { Low } from 'lowdb';
+import { LowSync } from 'lowdb';
 import { LocalStorage } from 'lowdb/browser';
 
 export interface Story {
@@ -17,32 +17,32 @@ interface Database {
 
 const adapter = new LocalStorage<Database>('ai-narrative-stories');
 const defaultData: Database = { stories: [] };
-export const db = new Low(adapter, defaultData);
+export const db = new LowSync(adapter, defaultData);
 
 export async function initDB() {
-  await db.read();
+  db.read();
   db.data ||= defaultData;
 }
 
 export async function saveStory(story: Omit<Story, 'id' | 'createdAt'>) {
-  await db.read();
+  db.read();
   const newStory: Story = {
     ...story,
-    id: Date.now().toString(),
+    id: crypto.randomUUID(),
     createdAt: new Date().toISOString()
   };
   db.data.stories.push(newStory);
-  await db.write();
+  db.write();
   return newStory;
 }
 
 export async function getStories() {
-  await db.read();
+  db.read();
   return db.data.stories;
 }
 
 export async function deleteStory(id: string) {
-  await db.read();
+  db.read();
   db.data.stories = db.data.stories.filter(s => s.id !== id);
-  await db.write();
+  db.write();
 }
