@@ -1,4 +1,4 @@
-import { Low } from 'lowdb';
+import { Low, type Adapter } from 'lowdb';
 import { LocalStorage } from 'lowdb/browser';
 
 export interface Story {
@@ -15,7 +15,24 @@ interface Database {
   stories: Story[];
 }
 
-const adapter = new LocalStorage<Database>('ai-narrative-stories');
+// 创建 async adapter wrapper
+class AsyncLocalStorageAdapter implements Adapter<Database> {
+  private storage: LocalStorage<Database>;
+  
+  constructor(key: string) {
+    this.storage = new LocalStorage<Database>(key);
+  }
+  
+  async read(): Promise<Database | null> {
+    return this.storage.read();
+  }
+  
+  async write(data: Database): Promise<void> {
+    return this.storage.write(data);
+  }
+}
+
+const adapter = new AsyncLocalStorageAdapter('ai-narrative-stories');
 const defaultData: Database = { stories: [] };
 export const db = new Low(adapter, defaultData);
 
