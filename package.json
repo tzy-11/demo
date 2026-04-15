@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "lowdb": "^7.0.1",
+<<<<<<< HEAD
+=======
+    "lucide-react": "^1.8.0",
+>>>>>>> 54898c1 (增强 Editor，支持长篇创作记忆注入与续写功能)
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.2",

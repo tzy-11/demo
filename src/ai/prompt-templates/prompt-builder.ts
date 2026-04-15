@@ -29,17 +29,21 @@ export class PromptBuilder {
     return prompt;
   }
 
-  static buildContinuationPrompt(currentStory: string, style: string): string {
+  static buildContinuationPrompt(currentStory: string, style: string, memory?: string, context?: string): string {
     const storyStyle = storyStyles[style] || storyStyles.default;
     
-    return `
-${storyStyle.systemPrompt}
+    let prompt = `\n${storyStyle.systemPrompt}\n\n当前故事：\n${currentStory}`;
 
-当前故事：
-${currentStory}
+    if (context) {
+      prompt += `\n\n上下文信息：\n${context}`;
+    }
 
-请继续这个故事，保持风格一致，并为故事生成 3-4 个合理的选项。
-`;
+    if (memory) {
+      prompt += `\n\n相关记忆：\n${memory}`;
+    }
+
+    prompt += `\n\n请继续这个故事，保持风格一致，并为故事生成 3-4 个合理的选项。\n`;
+    return prompt;
   }
 
   static buildImagePrompt(sceneDescription: string, style: string): string {
